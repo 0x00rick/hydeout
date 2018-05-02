@@ -5,7 +5,7 @@ sidebar_link: true
 ---
 
 <p class="message">
-  Hey there and welcome to my blog.
+  Hi and welcome to my blog.
 </p>
 
 I'm a student finishing up on his masters degree in computer science while trying to get his foot into the world of information security.

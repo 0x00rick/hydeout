@@ -1,14 +1,30 @@
 <nav id="sidebar-icon-links">
-  {% if site.github.repo %}
+  {% if site.social.github %}
     <a id="github-link"
-       class="icon" title="Github Project" aria-label="Github Project"
-       href="{{ site.github.repo }}">
+       class="icon" title="Github" aria-label="Github"
+       href="https://github.com/{{ site.social.github}}">
       {% include svg/github.svg %}
     </a>
-    <a id="github-download-link"
-       class="icon" title="Download" aria-label="Download"
-       href="{{ site.github.repo }}/archive/v{{ site.version }}.zip">
-      {% include svg/download.svg %}
+  {% endif %}
+  {% if site.social.twitter %}
+    <a id="twitter-link"
+       class="icon" title="Twitter" aria-label="Twitter"
+       href="https://twitter.com/{{ site.social.twitter}}">
+      {% include svg/twitter.svg %}
+    </a>
+  {% endif %}
+  {% if site.social.nullsec %}
+    <a id="nullsec-link"
+       class="icon" title="Nullsec" aria-label="Nullsec"
+       href="https://0x00sec.org/u/{{ site.social.nullsec}}">
+      {% include svg/user-secret.svg %}
+    </a>
+  {% endif %}
+  {% if site.social.mail %}
+    <a id="mail-link"
+       class="icon" title="Mail" aria-label="Mail"
+       href="mailto:{{ site.social.mail}}?Blog%20FeedBack!">
+      {% include svg/envelope.svg %}
     </a>
   {% endif %}
 

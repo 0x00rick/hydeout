@@ -6,36 +6,38 @@ category: [crackmes]
 tags: [linux, crackmes, RE, reverse engineering, ELF]
 ---
 
-# Preface
+## Preface
 
-This write up are my thoughts and steps to analyze a given unknown binary.  
+This write up are my thoughts and steps to analyze a given unknown binary.
 I want to understand the binary to a point where I can freely write about it. So here it is.
 
 I'm always open for you pointing out mistakes or giving feedback to me
 
 ## Disclaimer:
-I won't look at the assembly code to patch my way through to the end.  
+I won't look at the assembly code to patch my way through to the end.
 The goal will be to find the flag(s) to reach the "finish line" as it was intended.
 
 The steps taken in the following can probably be done in a different order as well.
 
 ## Binary Download
 
-[Binary download]({{ "https://github.com/0x00rick/0x00rick.github.com/raw/master/assets/anothah_one/anothah_one" | absolute_url }})  
-[BinaryNinja file download]({{ "https://github.com/0x00rick/0x00rick.github.com/raw/master/assets/assets/anothah_one/0x01.bndb" | absolute_url }})  
+[Binary download]({{ "https://github.com/0x00rick/0x00rick.github.com/raw/master/assets/anothah_one/anothah_one" | absolute_url }})
+[BinaryNinja file download]({{ "https://github.com/0x00rick/0x00rick.github.com/raw/master/assets/assets/anothah_one/0x01.bndb" | absolute_url }})
 
 
 # Binary Analysis
 
-## First assessment 
+## First assessment
 
 ### Binary format
-Let's take a look at the binary:  
+Let's take a look at the binary:
 
-![file_cmd]({{ "https://github.com/0x00rick/0x00rick.github.com/raw/master/assets/anothah_one/file_cmd.png" | absolute_url }})  
+	➜  anothah_one git:(master) ✗ file anothah_one
+	anothah_one: ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux.so.2, for GNU/Linux 2.6.24, BuildID[sha1]=ba03a27bfca2eb401a35c28e69e661173d9c82cd, not stripped
 
-We got a 32-bit [non stripped](https://stackoverflow.com/questions/22682151/difference-between-a-stripped-binary-and-a-non-stripped-binary-in-linux) ELF binary. 
-This sounds okay, since we still have the debugging symbols available.  
+
+We got a 32-bit [non stripped](https://stackoverflow.com/questions/22682151/difference-between-a-stripped-binary-and-a-non-stripped-binary-in-linux) ELF binary.
+This sounds okay, since we still have the debugging symbols available.
 
 ### Strings
 
@@ -84,9 +86,9 @@ So at the beginning we seem to have some function strings which might get called
 We already can assume that we have to deal with different read/print and input compare functions.
 Another function which stands out is **tolower**, which casts every input to lowercase.
 
-Next we get a rough idea what we are dealing with here. 
+Next we get a rough idea what we are dealing with here.
 Some kind of bomb defuse scenario ;) with 3 phases.
-I intentionally omitted the ascii art since its not of major importance and would not help us reverse the binary.  
+I intentionally omitted the ascii art since its not of major importance and would not help us reverse the binary.
 
 Following this we have some weird and shady looking strings we might wanna keep in mind for the next steps.
 
@@ -112,7 +114,7 @@ Time for some fun in depth analysis.
 Since we still have all the debugging symbols we can easily navigate through the binary.
 
 
-![main_no_com]({{ "https://github.com/0x00rick/0x00rick.github.com/raw/master/assets/anothah_one/main_no_comments.png" | absolute_url }})  
+![main_no_com]({{ "https://github.com/0x00rick/0x00rick.github.com/raw/master/assets/anothah_one/main_no_comments.png" | absolute_url }})
 
 We can clearly see that we have 3 phases with a preceeding **readLine** which will ask for our input to solve the respective phase.
 If we solved everything **win** gets called.
@@ -127,7 +129,7 @@ ______________
 #### Static analysis
 
 
-![phase1]({{ "https://github.com/0x00rick/0x00rick.github.com/raw/master/assets/anothah_one/phase1.png" | absolute_url }})  
+![phase1]({{ "https://github.com/0x00rick/0x00rick.github.com/raw/master/assets/anothah_one/phase1.png" | absolute_url }})
 
 Ok what do we see here.
 Some address 0x804b048 is moved into ebp-0xc.
@@ -142,9 +144,9 @@ This phase isn't a big challenge.
 We just have to look how the content that was copied in eax is changed before it get's compared.
 
 
-![p1_in_eax]({{ "https://github.com/0x00rick/0x00rick.github.com/raw/master/assets/anothah_one/p1_binarybomb_in_eax.png" | absolute_url }})  
+![p1_in_eax]({{ "https://github.com/0x00rick/0x00rick.github.com/raw/master/assets/anothah_one/p1_binarybomb_in_eax.png" | absolute_url }})
 
-![p1_after_changepost]({{ "https://github.com/0x00rick/0x00rick.github.com/raw/master/assets/anothah_one/p1_after_change.png" | absolute_url }})  
+![p1_after_changepost]({{ "https://github.com/0x00rick/0x00rick.github.com/raw/master/assets/anothah_one/p1_after_change.png" | absolute_url }})
 
 So we see that the content was "BinaryBomb:(" and it got changed to "=bJd{cBomb:(".
 
@@ -156,14 +158,14 @@ ______________
 
 ### Phase 2
 
-#### Static analysis  
+#### Static analysis
 
 
-![phase2]({{ "https://github.com/0x00rick/0x00rick.github.com/raw/master/assets/anothah_one/phase2.png" | absolute_url }})  
+![phase2]({{ "https://github.com/0x00rick/0x00rick.github.com/raw/master/assets/anothah_one/phase2.png" | absolute_url }})
 
 
-So next phase now.. The start is quite unspectacular. 
-We read in the user input and set ebp-0x74 to 0. 
+So next phase now.. The start is quite unspectacular.
+We read in the user input and set ebp-0x74 to 0.
 Then we compare ebp-0x74 to 0x7. If it's <= 0x7 we enter the left big code block.
 When we're done with the code block we jump back to the compare statement again.
 Looks familiar right?
@@ -192,7 +194,7 @@ This will always zero out the edx in this case here.
 
 Let's take a look at the next interesting operation
 
-    0x080488e3	mov	    ebx, dword [modulus]    // ebx is set to 10 here 
+    0x080488e3	mov	    ebx, dword [modulus]    // ebx is set to 10 here
     ...
     0x080488ee	idiv 	ebx
 
@@ -208,7 +210,7 @@ So eax holds the quotient and edx will hold the remainder after this operation.
 
 With this in mind the following line may make more sense now
 
-    0x080488f0	mov	    eax, edx 
+    0x080488f0	mov	    eax, edx
     0x080488f2	add 	eax, ecx
 
 
@@ -261,7 +263,7 @@ After a while I found a possible solution:
 So basically you want to take the integer values, do the full integer division and take the remainder and add it onto the integer value you did the division on.
 So for example:
 
-	"G" = 71 
+	"G" = 71
 	71 % 10 = 1 	// ebx = 10
 	71 + 1 = 72 = "H"
 
@@ -281,20 +283,20 @@ ______________
 
 #### Static analysis
 
-So as always let's take a look at the last phase for this binary!  
+So as always let's take a look at the last phase for this binary!
 
 
-![phase3]({{ "https://github.com/0x00rick/0x00rick.github.com/raw/master/assets/anothah_one/phase3.png" | absolute_url }})  
+![phase3]({{ "https://github.com/0x00rick/0x00rick.github.com/raw/master/assets/anothah_one/phase3.png" | absolute_url }})
 
 At first glance phase 3 might not look much more difficult compared to phase 2.
 If we look closer we can see another function call this time around though: **sanitize**.
 
-Also we can identify 2 seperate loops. 
+Also we can identify 2 seperate loops.
 
 Let's take q quick peak at the **sanitize** function
 
 
-![p3_sanitize]({{ "https://github.com/0x00rick/0x00rick.github.com/raw/master/assets/anothah_one/p3_sanitize.png" | absolute_url }})  
+![p3_sanitize]({{ "https://github.com/0x00rick/0x00rick.github.com/raw/master/assets/anothah_one/p3_sanitize.png" | absolute_url }})
 
 So first some values are getting moved around, a **strlen** function call follows to get the length of our provided input.
 When returning len(input) is stored in eax. ebx was probably set to 0 before the **strlen** call.
@@ -326,8 +328,8 @@ Now we have another comparison. Eax with was freshly set to 0x0 is compared to [
 
 `0x80489f4	 cmp 	eax, dword [ebp-0x10]`
 
-If eax is < len(input) we enter the first loop. 
-What happens here should be obvious by now. 
+If eax is < len(input) we enter the first loop.
+What happens here should be obvious by now.
 We are looping over every input byte again.
 
 But for what reason?
@@ -339,7 +341,7 @@ I set a breakpoint right before entering the first loop.
 
 
 
-![1stloop]({{ "https://github.com/0x00rick/0x00rick.github.com/raw/master/assets/anothah_one/1stloop.png" | absolute_url }})  
+![1stloop]({{ "https://github.com/0x00rick/0x00rick.github.com/raw/master/assets/anothah_one/1stloop.png" | absolute_url }})
 
 We notice that I provided ABCDefgh as input and abcdefgh is now on the stack and I passed the check against 0x4.
 Our made assumptions earlier were correct up to this point.
@@ -348,9 +350,9 @@ I set another breakpoint at the compare statement:
 
 `0x080489e3	 cmp	eax, dword [ebp-0xc]`
 
-![p3_enter_1st_loop]({{ "https://github.com/0x00rick/0x00rick.github.com/raw/master/assets/anothah_one/p3_entering_1stloop.png" | absolute_url }})  
+![p3_enter_1st_loop]({{ "https://github.com/0x00rick/0x00rick.github.com/raw/master/assets/anothah_one/p3_entering_1stloop.png" | absolute_url }})
 
-So what do we see here. 
+So what do we see here.
 A bunch of things, just try to follow me :) .
 
 * eax = 0x63 = "c"
@@ -372,7 +374,7 @@ If that's the case we finish this loop without a big bang ;) .
 
 So onto the next loop.
 
-![2ndloop]({{ "https://github.com/0x00rick/0x00rick.github.com/raw/master/assets/anothah_one/2ndloop.png" | absolute_url }})  
+![2ndloop]({{ "https://github.com/0x00rick/0x00rick.github.com/raw/master/assets/anothah_one/2ndloop.png" | absolute_url }})
 
 I set another breakpoint at the start of it at 0x08048a20
 
@@ -389,9 +391,9 @@ Here we got a few more interesting statements to look at:
        0x08048a0a	add    eax, ecx				      // eax looks at last input element
        0x08048a0c	movzx  eax, byte [eax]			  // set that last element as eax
        0x08048a0f	cmp    dl, al                     // see below :)
-       0x08048a11	je     0x8048a18 <phase_3+161>		
+       0x08048a11	je     0x8048a18 <phase_3+161>
        0x08048a13	call   0x8048b3b <explode_bomb>   // bang ;(
-       0x08048a18	add    dword [ebp+0x8],0x1 		
+       0x08048a18	add    dword [ebp+0x8],0x1
        0x08048a1c	sub    dword [ebp-0x10], 0x2	  // subtract 2 of len(input)
 
 The most important instruction to understand here is at address 0x08048a0f.
@@ -453,7 +455,7 @@ ______________
 		       MMMMMMMMM
 		       MMMMMMMMM
 		       OMMMMMMM
-		           ~         
+		           ~
 	Welcome to the Poly Bomb. Three levels to solve and you get a key at the completion of each level. Good Luck...
 	=bJd{cBomb:(
 	Good Job with Phase One on to the next
@@ -471,6 +473,3 @@ ______________
 I hope this binary analysis was somewhat helpful and easy to understand.
 I know it was a bit longer, and probably took some time to read through, but I didn't feel like splitting this little binary into 3 separate articles.
 If you have any questions shoot them.
-
-
-

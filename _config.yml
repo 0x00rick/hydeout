@@ -3,8 +3,8 @@ markdown:         kramdown
 highlighter:      rouge
 
 # Setup
-title:            ricks garage
-tagline:
+title:            0x00ricks garage
+tagline:          "- a blogging experience"
 description:      'Yet another infosec blog about reverse engineering, exploitation and hardware hacking,  paired with random thoughts and the usual banter about different things.'
 url:              https://0x00rick.com
 baseurl:          # the optional subpath of your site, e.g. "/blog"
@@ -12,6 +12,7 @@ baseurl:          # the optional subpath of your site, e.g. "/blog"
                   # If you want to move just the blog index pages but keep
                   # other pages at root, see the paginate_path and
                   # sidebar_blog_link below.
+google_analytics: "UA-117103646-1"
 
 author:
   name:           '0x00rick'
@@ -33,9 +34,14 @@ sidebar_home_link:  true
                                 # page. If you change your paginate_path,
                                 # set this to the root of the paginate_path
                                 # to enable a separate blog link.
-github:
-  repo:             https://github.com/0x00rick
+social:
+  github: 0x00rick
+  twitter: 0x00rick
+  nullsec: ricksanchez
+  mail: admin@0x00rick.com
+
+
 
 
 disqus:
-  shortname:        0x00rick
+  shortname:        0x00rick-com
